@@ -1,0 +1,52 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'application'
+mainClassName = 'com.auto.code.generator.core.AutoCodeGenerator'
+version =  '0.1.0'
+repositories {
+    mavenCentral()
+}
+
+jar {
+   baseName = 'AutoCodeGenerator'
+    version =  '0.1.0'
+  manifest {
+    attributes(
+      'Main-Class': mainClassName,
+    )
+  }
+}
+
+task generateJar(type: Jar) {
+  manifest.from jar.manifest
+  classifier = 'all'
+  baseName= jar.baseName
+  from {
+    (configurations.runtimeClasspath.findAll { !it.path.endsWith(".pom") }).collect { it.isDirectory() ? it : zipTree(it) }
+  } 
+  with jar
+}
+
+task generate(dependsOn: build, type:JavaExec ){
+    group = "Generating API artificates"
+    description = "Generating API artificates..."
+    classpath = sourceSets.main.runtimeClasspath
+    main = mainClassName
+    if ( project.hasProperty('jvmArgs') ) {
+        jvmArgs = (project.jvmArgs.split("\\s+") as List)
+
+    }
+}
+
+sourceCompatibility = 12
+targetCompatibility = 12
+
+dependencies {
+	compile group: 'org.springframework.boot', name: 'spring-boot-starter-parent', version: '2.2.6.RELEASE', ext: 'pom'
+    compile group: 'org.glassfish.jaxb', name: 'codemodel', version: '3.0.0-M1'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.0.rc1'
+	compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.6.RELEASE'
+	compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
+	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
+	compile group: 'commons-io', name: 'commons-io', version: '2.6'
+}
